@@ -6,11 +6,8 @@ from requests import get, post
 # import any blueprints from routes folder
 app = Flask(__name__)
 
-@app.route('/token')
-def get_token():
-    req = request.get_json(force=True)
-    id = req.get('id', None)
-    secret = req.get('secret', None)
+
+def get_token(id, secret):
     url = 'https://api.servicefusion.com/oauth/access_token'
     data = {
             "grant_type": "client_credentials",
@@ -21,12 +18,14 @@ def get_token():
         "Content-Type": "application/json"
     }
     result = post(url, json=data, headers=headers)
-    return result.json()
+    return result.json()["access_token"]
 
 @app.route('/jobs')
 def get_jobs():
     req = request.get_json(force=True)
-    token = req.get('token', None)
+    id = req.get('id', None)
+    secret = req.get('secret', None)
+    token = get_token(id, secret)
     phone = req.get('phone', None)
     daysMargin = int(req.get('daysMargin', None))
     year = int(req.get('year', None))
