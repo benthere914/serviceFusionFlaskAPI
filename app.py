@@ -36,6 +36,7 @@ def get_jobs():
     amount_of_jobs = 0
     current_page = 1
     total_pages = 2
+    print("aa")
     while (current_page < total_pages):
         jobs = get(f"https://api.servicefusion.com/v1/jobs?access_token={token}&filters[phone]={phone}&page={current_page}&per-page=50")
         total_pages = jobs.json()['_meta']['pageCount']
@@ -47,7 +48,7 @@ def get_jobs():
             total_spent += item['payments_deposits_total']
             amount_of_jobs += 1
 
-
+    print("bb")
     name = jobs.json()["items"][0]["customer_name"]
     return {"name": name, "total spent": total_spent, "amount of jobs": amount_of_jobs}
 CORS(app)
