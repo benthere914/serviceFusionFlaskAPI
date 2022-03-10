@@ -6,8 +6,11 @@ from requests import get, post
 # import any blueprints from routes folder
 app = Flask(__name__)
 
-
-def get_token(id, secret):
+@app.route('/token')
+def get_token():
+    req = request.get_json(force=True)
+    id = req.get('id', None)
+    secret = req.get('secret', None)
     url = 'https://api.servicefusion.com/oauth/access_token'
     data = {
             "grant_type": "client_credentials",
@@ -18,14 +21,12 @@ def get_token(id, secret):
         "Content-Type": "application/json"
     }
     result = post(url, json=data, headers=headers)
-    return result.json()["access_token"]
+    return result.json()
 
 @app.route('/jobs')
 def get_jobs():
     req = request.get_json(force=True)
-    id = req.get('id', None)
-    secret = req.get('secret', None)
-    token = get_token(id, secret)
+    token = req.get('token', None)
     phone = req.get('phone', None)
     daysMargin = int(req.get('daysMargin', None))
     year = int(req.get('year', None))
@@ -36,7 +37,6 @@ def get_jobs():
     amount_of_jobs = 0
     current_page = 1
     total_pages = 2
-    print("aa")
     while (current_page < total_pages):
         jobs = get(f"https://api.servicefusion.com/v1/jobs?access_token={token}&filters[phone]={phone}&page={current_page}&per-page=50")
         total_pages = jobs.json()['_meta']['pageCount']
@@ -48,9 +48,17 @@ def get_jobs():
             total_spent += item['payments_deposits_total']
             amount_of_jobs += 1
 
-    print("bb")
+
     name = jobs.json()["items"][0]["customer_name"]
     return {"name": name, "total spent": total_spent, "amount of jobs": amount_of_jobs}
+
+
+@app.route('/jobs', methods=["POST"])
+def new_job():
+    req = request.get_json(force=True)
+    phoneNumber = req.get('phone', None)
+    return {'phone': phoneNumber}
+
 CORS(app)
 
 if __name__ == "__main__":
